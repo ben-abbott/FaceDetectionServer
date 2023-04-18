@@ -1,4 +1,7 @@
 const express = require('express');
+const bcrypt = require('bcrypt-nodejs');
+const cors = require('cors');
+
 const app = express();
 
 
@@ -34,6 +37,7 @@ const database = {
 
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
+app.use(cors());
 
 app.get('/', (req, res) => {
     res.send(database.users)
@@ -54,7 +58,6 @@ app.post('/register', (req, res) => {
         id: '125',
         name: name,
         email: email,
-        password: password,
         entries: 0,
         joined: new Date()
     });
