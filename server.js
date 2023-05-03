@@ -2,8 +2,12 @@ const express = require('express');
 const bcrypt = require('bcrypt-nodejs');
 const cors = require('cors');
 const knex = require('knex');
+const http = require('http');
 const app = express();
-const { ClarifaiStub, grpc } = require("clarifai-nodejs-grpc");
+const image = require('./controllers/image');
+// const { ClarifaiStub, grpc } = require("clarifai-nodejs-grpc");
+// const dotenv = require('dotenv');
+// dotenv.config();
 
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
@@ -11,10 +15,10 @@ app.use(cors());
 
 
 
-const stub = ClarifaiStub.grpc();
+// const stub = ClarifaiStub.grpc();
 
-const metadata = new grpc.Metadata();
-metadata.set("authorization", "Key f48b618599ac496ea6f8e9ef9f494209");
+// const metadata = new grpc.Metadata();
+// metadata.set("authorization", "Key ${process.env.CLARIFAI_AUTH_KEY}");
 
 
 
@@ -92,33 +96,39 @@ app.post('/register', (req, res) => {
 //     })
 //     .catch(err => res.status(400).json('error getting user'))
 // });
-app.post('/imageurl', (req, res) => {
-    const { imageUrl } = req.body;
-        stub.PostModelOutputs(
-        {
-            // This is the model ID of a publicly available General model. You may use any other public or custom model ID.
-            model_id: "face-detection",
-            inputs: [{data: {image: {url: imageUrl}}}]
-        },
-        metadata,
-        (err, response) => {
-            if (err) {
-                console.log("Error: " + err);
-                return;
-            }
-            if (response.status.code !== 10000) {
-                console.log("Received failed status: " + response.status.description + "\n" + response.status.details);
-                return;
-            }
-    
-            console.log("Response.outputs")
-            console.log(response.outputs[0].data.regions[0].region_info.bounding_box)
-            // for (const c of response.outputs[0].data.concepts) {
-            //     console.log(c.name + ": " + c.value);
-            // }
-        }
-    );
-});
+
+app.post('/imageurl', (req, res) => image.handleDetect(req, res));
+
+// app.post('/imageurl', (req, res) => {
+//     const { imageUrl } = req.body;
+//     // const detectFace = () => {
+//     //     stub.PostModelOutputs(
+//     //     {
+//     //         // This is the model ID of a publicly available General model. You may use any other public or custom model ID.
+//     //         model_id: "face-detection",
+//     //         inputs: [{data: {image: {url: imageUrl}}}]
+//     //     },
+//     //     metadata,
+//     //     (err, response) => {
+//     //         if (err) {
+//     //             console.log("Error: " + err);
+//     //             return;
+//     //         }
+//     //         if (response.status.code !== 10000) {
+//     //             console.log("Received failed status: " + response.status.description + "\n" + response.status.details);
+//     //             return;
+//     //         }
+            
+//     //         console.log("Response.outputs")
+//     //         let result = response.outputs[0].data.regions[0].region_info.bounding_box;
+//     //         resolve(result);
+//     //         // for (const c of response.outputs[0].data.concepts) {
+//     //         //     console.log(c.name + ": " + c.value);
+//     //         // }
+//     //     }
+//     //     )
+//     // }
+// });
 
 
 
@@ -133,17 +143,11 @@ app.put('/image', (req, res) => {
     .catch(err => res.status(400).json('Unable to get entries'))
 });
 
-app.listen(3000, () => {
-    console.log("app running on port 3000");
+const port = process.env.PORT || '3000';
+app.set('port', port);
+const server = http.createServer(app);
+server.listen(port);
+server.on('listening', () => {
+    console.log(`Listening on ${port}`);
 });
 
-
-
-/*
-/ --> this is working
-/signin --> POST res->success or fail
-/register --> POST res-> added or already exist
-/profile/:userid --> GET user info
-/image --> PUT -> res updated user/rank/count
-
-*/
