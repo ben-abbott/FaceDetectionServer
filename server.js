@@ -21,8 +21,8 @@ const db = knex({
       host : '127.0.0.1',
       port : 5432,
       user : 'postgres',
-      password : 'test',
-      database : 'smart-brain'
+      password : process.env.DB_PASS,
+      database : process.env.DB_NAME
     }
 });
 
@@ -44,7 +44,6 @@ app.put('/image', (req, res) => { handleEntries(req, res, db) });
 //     })
 //     .catch(err => res.status(400).json('error getting user'))
 // });
-
 
 
 const port = process.env.PORT || '3000';

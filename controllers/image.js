@@ -5,7 +5,8 @@ dotenv.config();
 
 const stub = ClarifaiStub.grpc();
 const metadata = new grpc.Metadata();
-metadata.set("authorization", "Key f48b618599ac496ea6f8e9ef9f494209");
+metadata.set("authorization", `Key ${process.env.CLARIFAI_AUTH_KEY}`);
+
 
 const detectFace = (inputs) => {
     // console.log("detectFace triggered")
